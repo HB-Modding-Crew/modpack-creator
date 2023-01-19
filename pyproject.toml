@@ -1,0 +1,6 @@
+[project]
+name = "modpack-creator"
+dynamic = ["version"]
+
+[tool.setuptools.dynamic]
+version = {attr = "modpack-creator.__version__"}
