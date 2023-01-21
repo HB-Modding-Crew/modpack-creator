@@ -2,7 +2,7 @@ from ModpackCreator.ATask import AVarDef
 import re
 import os
 
-regex_path_unix = r"^((/)|((~|\.\.?|\.)/?))?([\w-]+/)*[\w-]*/?$"
+regex_path_unix = r"^((/)|((~|\.\.?|\.)/?))?([\w\-\.0-9 ]+/)*[\w\-\.0-9 ]*/?$"
 
 class PathVar(AVarDef):
 

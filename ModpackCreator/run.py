@@ -8,13 +8,16 @@ from .ATask import ATask
 parser = argparse.ArgumentParser(description=__doc__, prog='modpack-creator')
 
 # Optionals arguments: tasks. -t, --tasks. List of task to execute in the corresponding order. Empty by default.
-parser.add_argument('-t', '--tasks', nargs='*', default=[], help='List of tasks to execute in the corresponding order. All tasks by default.')
+parser.add_argument('-t', '--tasks', nargs='*', default=[], help='List of tasks in the corresponding order. All tasks by default.')
 
 # Ptional argument: --setup. If you want to setup the tasks indeed of executing them. False by default.
 parser.add_argument('--setup', action='store_true', help='If you want to setup the tasks instead of executing them. False by default.')
 
 # Optionals arguments: --version. -v. Print the version and exit.
 parser.add_argument('-v', '--version', action='version', version=f'%(prog)s {__version__}')
+
+# Optionals argument: --help. -h. Print the help and exit.
+#parser.add_argument('-h', '--help', action='help', help='Print the help and exit.')
 
 
 # Built-in tasks names
@@ -42,6 +45,8 @@ def run():
     import_all_tasks()
     # If tasks argument is passed
     if args.tasks:
+        if not args.setup:
+            print("You can't execute all tasks at once. Use --setup to setup all tasks, or pass the tasks you want to execute with -t")
         tasks = args.tasks
     # If tasks argument is not passed
     else:
@@ -57,5 +62,8 @@ def run():
         pass
     # If setup argument is not passed
     else:
-        # TODO: Run the tasks
-        pass
+        # Execute the tasks
+        for task in tasks:
+            print(f"Executing {task}")
+            task: ATask = tasks_map[task]()
+            task.run()

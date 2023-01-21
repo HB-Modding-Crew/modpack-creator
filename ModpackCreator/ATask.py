@@ -30,8 +30,11 @@ class AVarDef:
         # Final value
         final_value = None
         # Open the config file as json
-        with open(CONFIG_PATH, "r") as f:
-            config = json.load(f)
+        try:
+            with open(CONFIG_PATH, "r") as f:
+                config = json.load(f)
+        except FileNotFoundError:
+            config = {}
         # If the config is not in the config file
         while final_value is None:
             if self.name not in config.keys():
@@ -117,6 +120,17 @@ class ATask:
 
     # Public method to run the action. Should not be overriden by subclasses.
     def run(self):
+        # Get configs
+        try:
+            with open(CONFIG_PATH, "r") as f:
+                self.config = json.load(f)
+        except FileNotFoundError:
+            self.config = {}
+        # Verify if the config is set
+        for config in self.setup_configs:
+            if config.name not in self.config.keys():
+                print(f"{config.name} is not set. Please run the setup command.")
+                return
         # Run the action
         self._run()
             
