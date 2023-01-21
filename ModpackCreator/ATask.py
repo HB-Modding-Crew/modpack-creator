@@ -1,7 +1,7 @@
 from typing import List
 import json
 
-from const import CONFIG_PATH
+from ModpackCreator.const import CONFIG_PATH
 
 class AVarDef:
     # Name of the variable. Should be overriden by subclasses. Should be set on init.
@@ -22,13 +22,16 @@ class AVarDef:
         self.default = default
 
     # Validate the value of the variable. Should be overriden by the subclasses.
-    def __validate(self, value):
+    def _validate(self, value):
         raise NotImplementedError()
 
     # Prompt the value of the variable. Should not be overriden by subclasses.
     def setup_value(self):
+        # Print type
+        print(f"Type: {type(self)}")
         # Final value
         final_value = None
+        print(self.name)
         # Open the config file as json
         with open(CONFIG_PATH, "r") as f:
             config = json.load(f)
@@ -53,7 +56,7 @@ class AVarDef:
                     print(f"Invalid type. Expected {self.type}.")
                     continue
                 # Validate the value
-                if self.__validate(value):
+                if self._validate(value):
                     # Set the final value to the value
                     final_value = value
                 # If the value is invalid
@@ -86,7 +89,7 @@ class AVarDef:
                         print(f"Invalid type. Expected {self.type}.")
                         continue
                     # Validate the value
-                    if self.__validate(value):
+                    if self._validate(value):
                         # Set the final value to the value
                         final_value = value
                     # If the value is invalid
@@ -95,6 +98,9 @@ class AVarDef:
                         print(self.format_feedback)
         # Set the value in the config file
         config[self.name] = final_value
+        # Save the config file
+        with open(CONFIG_PATH, "w") as f:
+            json.dump(config, f, indent=4)
 
 
 class ATask:
@@ -102,7 +108,7 @@ class ATask:
     setup_configs: List[AVarDef] = []
 
     # Public method to setup the action. Should not be overriden by subclasses.
-    def setup(self, args):
+    def setup(self):
         # Setup the config file
         for config in self.setup_configs:
             config.setup_value()
