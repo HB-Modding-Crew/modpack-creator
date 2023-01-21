@@ -1,5 +1,6 @@
 from ATask import AVarDef
 import re
+import os
 
 regex_path_unix = r"^((/)|((~|\.\.?|\.)/?))?([\w-]+/)*[\w-]*/?$"
 
@@ -39,7 +40,7 @@ class RelativePathVar(PathVar):
 class RelativeToPathVar(RelativePathVar):
 
     # Init
-    def __init__(self, name: str, description: str, default: str = None, abs_path: str = None):
+    def __init__(self, name: str, description: str, default: str = None, abs_path: str = ""):
         super().__init__(name, description, default)
         self.path = abs_path
 
@@ -48,7 +49,37 @@ class RelativeToPathVar(RelativePathVar):
         # Verify RelativePathVar validation
         if not super().__validate(value):
             return False
-        # Verify that the path is relative to the path
-        if value[0:2] == "./" or value[0:3] == "../":
+        # Concatenate the path and the value
+        path = self.path + value
+        # Verify that the path exists
+        if os.path.exists(path):
+            return True
+        return False
+
+class DirectoryRelativeToPathVar(RelativeToPathVar):
+
+    # Verify that the value is a valid relative path
+    def __validate(self, value: str):
+        # Verify RelativeToPathVar validation
+        if not super().__validate(value):
+            return False
+        # Concatenate the path and the value
+        path = self.path + value
+        # Verify that the path is a directory
+        if os.path.isdir(path):
+            return True
+        return False
+
+class FileRelativeToPathVar(RelativeToPathVar):
+
+    # Verify that the value is a valid relative path
+    def __validate(self, value: str):
+        # Verify RelativeToPathVar validation
+        if not super().__validate(value):
+            return False
+        # Concatenate the path and the value
+        path = self.path + value
+        # Verify that the path is a file
+        if os.path.isfile(path):
             return True
         return False
