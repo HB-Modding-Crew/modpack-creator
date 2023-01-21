@@ -6,6 +6,8 @@ regex_path_unix = r"^((/)|((~|\.\.?|\.)/?))?([\w-]+/)*[\w-]*/?$"
 
 class PathVar(AVarDef):
 
+    format_feedback = "Invalid path format. Expected a valid Unix path."
+
     # Verify that the value is a valid path
     def __validate(self, value: str):
         # Verify that the path is valid Unix path
@@ -14,6 +16,8 @@ class PathVar(AVarDef):
         return False
 
 class AbsolutePathVar(PathVar):
+
+    format_feedback = "Invalid path format. Expected a valid absolute Unix path."
 
     # Verify that the value is a valid absolute path
     def __validate(self, value: str):
@@ -27,6 +31,8 @@ class AbsolutePathVar(PathVar):
 
 class RelativePathVar(PathVar):
 
+    format_feedback = "Invalid path format. Expected a valid relative Unix path."
+
     # Verify that the value is a valid relative path
     def __validate(self, value: str):
         # Verify PathVar validation
@@ -38,6 +44,8 @@ class RelativePathVar(PathVar):
         return False
 
 class RelativeToPathVar(RelativePathVar):
+
+    format_feedback = "Invalid path format. Expected a valid relative Unix path. The target path must exist."
 
     # Init
     def __init__(self, name: str, description: str, default: str = None, abs_path: str = ""):
@@ -58,6 +66,8 @@ class RelativeToPathVar(RelativePathVar):
 
 class DirectoryRelativeToPathVar(RelativeToPathVar):
 
+    format_feedback = "Invalid path format. Expected a valid relative Unix path. The target path must be an existing directory."
+
     # Verify that the value is a valid relative path
     def __validate(self, value: str):
         # Verify RelativeToPathVar validation
@@ -71,6 +81,8 @@ class DirectoryRelativeToPathVar(RelativeToPathVar):
         return False
 
 class FileRelativeToPathVar(RelativeToPathVar):
+
+    format_feedback = "Invalid path format. Expected a valid relative Unix path. The target path must be an existing file."
 
     # Verify that the value is a valid relative path
     def __validate(self, value: str):
