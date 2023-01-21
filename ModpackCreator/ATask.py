@@ -27,11 +27,8 @@ class AVarDef:
 
     # Prompt the value of the variable. Should not be overriden by subclasses.
     def setup_value(self):
-        # Print type
-        print(f"Type: {type(self)}")
         # Final value
         final_value = None
-        print(self.name)
         # Open the config file as json
         with open(CONFIG_PATH, "r") as f:
             config = json.load(f)
@@ -101,6 +98,7 @@ class AVarDef:
         # Save the config file
         with open(CONFIG_PATH, "w") as f:
             json.dump(config, f, indent=4)
+
 
 
 class ATask:
