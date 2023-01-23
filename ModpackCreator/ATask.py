@@ -14,18 +14,21 @@ class AVarDef:
     default = None
     # Type of the variable. Should be overriden by subclasses.
     type = str
+    # If the variable is passive, it will not be prompted to the user at all if it is already set. Should be overriden by subclasses.
+    passive = False
 
     # Init
-    def __init__(self, name: str, description: str, default = None):
+    def __init__(self, name: str, description: str, default = None, passive: bool = False):
         self.name = name
         self.description = description
         self.default = default
+        self.passive = passive
 
     # Validate the value of the variable. Should be overriden by the subclasses.
     def _validate(self, value):
         raise NotImplementedError()
 
-    # Prompt the value of the variable. Should not be overriden by subclasses.
+    # Prompt the value of the variable and put it in config. Should not be overriden by subclasses.
     def setup_value(self):
         # Final value
         final_value = None
@@ -35,8 +38,8 @@ class AVarDef:
                 config = json.load(f)
         except FileNotFoundError:
             config = {}
-        # If the config is not in the config file
         while final_value is None:
+            # If the config is not in the config file
             if self.name not in config.keys():
                 # If the config has a default value
                 if self.default is not None:
@@ -63,7 +66,7 @@ class AVarDef:
                 else:
                     # Print the format feedback
                     print(self.format_feedback) 
-            else:
+            elif not self.passive:
                 # Explain the user that the value is already set and ask if he wants to change it
                 value = input(f"{self.name} is already set to {config[self.name]}. Do you want to change it? [y/N]: ")
                 # If the user don't want to change it
@@ -96,17 +99,57 @@ class AVarDef:
                     else:
                         # Explain the user the format
                         print(self.format_feedback)
+            else:
+                final_value = config[self.name]
         # Set the value in the config file
         config[self.name] = final_value
         # Save the config file
         with open(CONFIG_PATH, "w") as f:
             json.dump(config, f, indent=4)
 
+    # Prompt the value of the variable and return it. Should not be overriden by subclasses.
+    def prompt_value(self):
+        # Final value
+        final_value = None
+        # While final value not validated
+        while final_value is None:
+            # If the config has a default value
+            if self.default is not None:
+                # Input with default value prompt
+                value = input(f"{self.name}: {self.description} [{self.default}]: ")
+                # If the value is empty
+                if value.strip() == "":
+                    # Set the value to the default value
+                    value = self.default
+                    print(f"Using default value: {value}")
+            # If the config has no default value
+            else:
+                # Input prompt
+                value = input(f"{self.name}: {self.description}: ")
+            # Verify the type
+            if not isinstance(value, self.type):
+                print(f"Invalid type. Expected {self.type}.")
+                continue
+            # Validate the value
+            if self._validate(value):
+                # Set the final value to the value
+                final_value = value
+            # If the value is invalid
+            else:
+                # Explain the user the format
+                print(self.format_feedback)
+
+        return final_value
+
+
 
 
 class ATask:
     # Setup configs list: should be overriden by subclasses
     setup_configs: List[AVarDef] = []
+
+    # Run variables list: should be overriden by subclasses
+    run_args: List[AVarDef] = []
 
     # Public method to setup the action. Should not be overriden by subclasses.
     def setup(self):
@@ -131,6 +174,14 @@ class ATask:
             if config.name not in self.config.keys():
                 print(f"{config.name} is not set. Please run the setup command.")
                 return
+        self.args = {}
+        # Get run variables
+        for arg in self.run_args:
+            self.args[arg.name] = arg.prompt_value()
         # Run the action
         self._run()
+
+    def save_config(self):
+        with open(CONFIG_PATH, "w") as f:
+            json.dump(self.config, f, indent=4)
             

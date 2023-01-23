@@ -1,6 +1,6 @@
 [project]
 name = "modpack-creator"
-version = "1.0.0"
+version = "0.1.4"
 description = "A tool to create and maintain modpacks for Minecraft"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -18,8 +18,8 @@ classifiers = [  # Optional
   "Development Status :: 3 - Alpha",
 
   # Indicate who your project is intended for
-  "Intended Audience :: Modpack Makers",
-  "Topic :: Modpack Making Tool",
+  "Intended Audience :: Developers",
+  "Topic :: Games/Entertainment",
 
   # Pick your license as you wish
   "License :: OSI Approved :: MIT License",

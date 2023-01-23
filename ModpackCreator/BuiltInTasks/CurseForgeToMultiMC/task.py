@@ -1,5 +1,5 @@
 from ModpackCreator.ATask import ATask
-from ModpackCreator.SetupVarTypes.PathVar import DirectoryAbsolutePathVar
+from ModpackCreator.InputVarTypes.PathVar import DirectoryAbsolutePathVar
 import os
 
 from . import FilesFunctions
@@ -58,6 +58,8 @@ class Task(ATask):
         if not "instance_includes_list" in self.config.keys():
             # If not, set it to the default value
             self.config["instance_includes_list"] = default_instance_includes_list
+            # Save the configuration
+            self.save_config()
             # Advise the user
             print("No instance includes list found in the configuration file. Set config with defaults includes. You can change it in the configuration file.")
         
@@ -71,11 +73,11 @@ class Task(ATask):
             # If the file is a directory
             if os.path.isdir(path):
                 # Remove the directory
-                FilesFunctions.remove_dir(path)
+                FilesFunctions.remove_dir(path, included_file)
             # If the file is a file
             elif os.path.isfile(path):
                 # Remove the file
-                FilesFunctions.remove_file(path)
+                FilesFunctions.remove_file(path, included_file)
 
         # Copy the files from the CurseForge instance to the MultiMC instance
         for included_file in instance_includes_list:
@@ -85,8 +87,8 @@ class Task(ATask):
             # If the file is a directory
             if os.path.isdir(from_path):
                 # Copy the directory
-                FilesFunctions.copy_dir(from_path, to_path)
+                FilesFunctions.copy_dir(from_path, to_path, included_file, included_file)
             # If the file is a file
             elif os.path.isfile(from_path):
                 # Copy the file
-                FilesFunctions.copy_file(from_path, to_path)
+                FilesFunctions.copy_file(from_path, to_path, included_file, included_file)

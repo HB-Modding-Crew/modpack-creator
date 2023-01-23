@@ -44,7 +44,7 @@ def run():
     # Import all tasks
     import_all_tasks()
     # If tasks argument is passed
-    if args.tasks:
+    if not args.tasks:
         if not args.setup:
             print("You can't execute all tasks at once. Use --setup to setup all tasks, or pass the tasks you want to execute with -t")
         tasks = args.tasks
