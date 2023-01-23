@@ -130,10 +130,14 @@ dmypy.json
 
 # IDE
 .idea/
-.vscode/
+.vscode/*
+!.vscode/launch.json
 
 # Tests
 config.json
 
 # Private
 *.private
+
+# Keyring shell
+keyring-shell.sh

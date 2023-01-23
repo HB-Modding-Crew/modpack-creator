@@ -4,6 +4,7 @@ from ModpackCreator.InputVarTypes.PathVar import RelativeToPathVar
 import os
 import re
 from ..CurseForgeToMultiMC.task import MultiMCInstancePathVar
+from ..BuildCurseforgePackFromExport.task import ModpackNameVar
 
 from . import FilesFunctions
 import json
@@ -18,6 +19,8 @@ class MultiMCInstanceExportPathVar(RelativeToPathVar):
 
     # Verify that the value is a valid absolute path
     def _validate(self, value: str):
+        # Get zip name
+        zip_name = '.'.join(value.split("/")[-1].split(".")[0:-1])
         # Verify RelativeToPathVar validation
         if not super()._validate(value):
             return False
@@ -28,7 +31,7 @@ class MultiMCInstanceExportPathVar(RelativeToPathVar):
             print("Not a .zip")
             return False
         # Verify that the .zip contains a minecraft or .minecraft folder
-        if not FilesFunctions.zip_contains_dir(path, "minecraft") and not FilesFunctions.zip_contains_dir(path, ".minecraft"):
+        if not FilesFunctions.zip_contains_dir(path, zip_name + "/minecraft") and not FilesFunctions.zip_contains_dir(path, zip_name + "/.minecraft"):
             print("No minecraft folder found in .zip")
             return False
         return True
@@ -56,7 +59,8 @@ class Task(ATask):
 
     # Setup configs list
     setup_configs = [
-        MultiMCInstancePathVar("mmc_instance", "Path to the MMC instance folder")
+        MultiMCInstancePathVar("mmc_instance", "Path to the MMC instance folder", passive=True),
+        ModpackNameVar("modpack_name", "Name of the modpack", passive=True)
     ]
 
     # Run variables
@@ -70,16 +74,16 @@ class Task(ATask):
         # Name value regex
         name_value_regex = re.compile(r"\d+\.\d+\.\d+-?\w*\.?\d*")
         # Get instance name
-        instance_name = self.args["mmc_instance"].split("/")[-1].split("\\")[-1]
+        instance_name = self.config["mmc_instance"].split("/")[-1].split("\\")[-1]
         # Get the raw export path
         raw_export_path = "./exports/" + self.args["mmc_instance_export_path"]
         # Remove old prepared export
         if os.path.isfile(self.mmc_prepared_export_path):
             os.remove(self.mmc_prepared_export_path)
         # Copy the export to the prepared export path
-        FilesFunctions.copy_file(raw_export_path, self.mmc_prepared_export_path)
+        FilesFunctions.copy_file(raw_export_path, self.mmc_prepared_export_path, "exported profile", "prepare profile")
         # Copy instance.cfg from zip to temp
-        FilesFunctions.copy_from_zip(self.mmc_prepared_export_path, instance_name + "/instance.cfg", "temp/instance.cfg")
+        FilesFunctions.copy_from_zip(instance_name + "/instance.cfg", "temp/instance.cfg", self.mmc_prepared_export_path)
         # Open the instance.cfg file
         with open("temp/instance.cfg", "r+") as instance_cfg_file:
             content = instance_cfg_file.read()
@@ -90,26 +94,28 @@ class Task(ATask):
             instance_cfg_file.truncate()
             instance_cfg_file.write(content)
         # Copy instance.cfg from temp to zip
-        FilesFunctions.copy_to_zip(self.mmc_prepared_export_path, "temp/instance.cfg", instance_name + "/instance.cfg")
+        FilesFunctions.copy_to_zip("temp/instance.cfg", instance_name + "/instance.cfg", self.mmc_prepared_export_path)
 
-        # Copy instance.cfg from zip to temp
-        FilesFunctions.copy_from_zip(self.mmc_prepared_export_path, instance_name + "/instance.cfg", "temp/instance.cfg")
+        # Remove temp/instance.cfg
+        if os.path.isfile("temp/instance.cfg"):
+            os.remove("temp/instance.cfg")
 
     def pack_mmc(self):
         print("Packing MultiMC profile")
 
         # Preparing command
-        program = "multimc-export"
+        program = "mmc-export"
         from_zip = "-i " + self.mmc_prepared_export_path
         output_format = "-f Modrinth"
         search_mod = "--modrinth-search loose"
         output_directory = "-o ./output"
         toml_file = "-c ./mmc-export.toml"
         pack_version = "-v " + self.args["version"]
-        scheme = f'--scheme {"{name}-{version}"}'
+        scheme = f'--scheme {self.config["modpack_name"]+"-{version}"}'
 
         # Concatenate command
         cmd = f"{program} {from_zip} {output_format} {search_mod} {output_directory} {toml_file} {pack_version} {scheme}"
+        print(cmd)
 
         # Run command
         os.system(cmd)
@@ -118,3 +124,4 @@ class Task(ATask):
     # Run the task
     def _run(self):
         self.prepare_mmc_profile()
+        self.pack_mmc()

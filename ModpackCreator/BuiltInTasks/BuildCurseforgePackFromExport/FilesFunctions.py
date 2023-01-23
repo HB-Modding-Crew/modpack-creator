@@ -32,13 +32,18 @@ def copy_file(from_path, to_path, from_desc, to_desc):
 
 def zip_contains_file(zip_path, file_name):
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-        return file_name in zip_ref.namelist()
+        if file_name in zip_ref.namelist():
+            print(file_name + " in " + zip_path + " found !")
+            return True
+    print("No " + file_name + " in " + zip_path)
 
 def zip_contains_dir(zip_path, dir_name):
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
         for name in zip_ref.namelist():
             if name.startswith(dir_name):
+                print(dir_name + " in " + zip_path + " found !")
                 return True
+    print("No " + dir_name + " in " + zip_path)
     return False
 
 def copy_to_zip(from_path, to_path, archive_path):

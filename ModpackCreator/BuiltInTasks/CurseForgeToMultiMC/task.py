@@ -41,7 +41,7 @@ class Task(ATask):
     # Setup configs list
     setup_configs = [
         CurseForgeInstancePathVar("curseforge_instance", "Path to the curseforge instance folder"),
-        MultiMCInstancePathVar("mmc_instance", "Path to the MMC instance folder")
+        MultiMCInstancePathVar("mmc_instance", "Path to the MMC instance folder", passive=True)
     ]
 
     # Run the task

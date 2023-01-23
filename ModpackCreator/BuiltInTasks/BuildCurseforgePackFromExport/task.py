@@ -32,30 +32,6 @@ class CurseforgeInstanceExportPathVar(RelativeToPathVar):
             return False
         return True
 
-class MultiMCInstanceExportPathVar(RelativeToPathVar):
-    format_feedback = "Invalid path. Expected a valid MultiMC instance .zip export."
-
-    def __init__(self, name: str, description: str, default: str = None):
-        description = "The path to the MultiMC instance .zip export. The path must be relative to the exports directory (./exports/)."
-        super().__init__(name, description, default, "./exports/")
-
-    # Verify that the value is a valid absolute path
-    def _validate(self, value: str):
-        # Verify RelativeToPathVar validation
-        if not super()._validate(value):
-            return False
-        # Concatenate the path and the value
-        path = self.path + '/' + value
-        # Verify that the path is a .zip file
-        if not os.path.isfile(path) or not path.endswith(".zip"):
-            print("Not a .zip")
-            return False
-        # Verify that the .zip contains a minecraft or .minecraft folder
-        if not FilesFunctions.zip_contains_folder(path, "minecraft") and not FilesFunctions.zip_contains_folder(path, ".minecraft"):
-            print("No minecraft folder found in .zip")
-            return False
-        return True
-
 class VersionVar(AVarDef):
     format_feedback = "Invalid version. Expected a valid version number (ex: 1.0.0)."
 
@@ -70,6 +46,17 @@ class VersionVar(AVarDef):
             return False
         return True
 
+class ModpackNameVar(AVarDef):
+    format_feedback = "Invalid modpack name. Expected a valid modpack name (sould not conain any path forbidden characters)."
+
+    # Verify that the value is a valid absolute path
+    def _validate(self, value: str):
+        # Should not contain aany path forbidden characters
+        if not re.match(r"^[^\\/:*?\"<>|]+$", value):
+            print("Invalid modpack name")
+            return False
+        return True
+
 
 class Task(ATask):
 
@@ -79,6 +66,7 @@ class Task(ATask):
 
     # Setup configs list
     setup_configs = [
+        ModpackNameVar("modpack_name", "Name of the modpack", passive=True),
     ]
 
     # Run variables
@@ -95,9 +83,9 @@ class Task(ATask):
         if os.path.isfile(self.curseforge_prepared_export_path):
             os.remove(self.curseforge_prepared_export_path)
         # Copy the export to the prepared export path
-        FilesFunctions.copy_file(raw_export_path, self.curseforge_prepared_export_path)
+        FilesFunctions.copy_file(raw_export_path, self.curseforge_prepared_export_path, "exported profile", "prepare profile")
         # Copy manifest.json from zip to temp
-        FilesFunctions.copy_from_zip(self.curseforge_prepared_export_path, "manifest.json", "temp/manifest.json")
+        FilesFunctions.copy_from_zip("manifest.json", "temp/manifest.json", self.curseforge_prepared_export_path)
         # Open the manifest.json file
         with open("temp/manifest.json", "r+") as manifest_file:
             content = manifest_file.read()
@@ -110,13 +98,14 @@ class Task(ATask):
             manifest_file.truncate()
             manifest_file.write(json.dumps(content_json, indent=4))
         # Copy manifest.json from temp to zip
-        FilesFunctions.copy_to_zip(self.curseforge_prepared_export_path, "temp/manifest.json", "manifest.json")
+        FilesFunctions.copy_to_zip("temp/manifest.json", "manifest.json", self.curseforge_prepared_export_path)
 
     def pack_curseforge(self):
         print("Packing curseforge")
         # Copy the prepared export to the output directory
-        FilesFunctions.copy_file(self.curseforge_prepared_export_path, "output/" + self.args["version"] + ".zip")
+        FilesFunctions.copy_file(self.curseforge_prepared_export_path, "output/" + self.config["modpack_name"] + "-" + self.args["version"] + ".zip", "prepared curseforge export", "output pack")
         
     # Run the task
     def _run(self):
         self.prepare_curseforge_profile()
+        self.pack_curseforge()
