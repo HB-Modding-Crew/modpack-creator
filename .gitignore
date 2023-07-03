@@ -135,9 +135,13 @@ dmypy.json
 
 # Tests
 config.json
+tasks/
 
 # Private
 *.private
 
 # Keyring shell
 keyring-shell.sh
+
+# Old
+old/
