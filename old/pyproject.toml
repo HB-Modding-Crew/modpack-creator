@@ -1,0 +1,49 @@
+[project]
+name = "modpack-creator"
+version = "0.1.7"
+description = "A tool to create and maintain modpacks for Minecraft"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {file = "LICENSE"}
+keywords = ["modpack", "minecraft", "mod", "curseforge", "modrinth", "multimc", "prism"]
+
+# Classifiers help users find your project by categorizing it.
+#
+# For a list of valid classifiers, see https://pypi.org/classifiers/
+classifiers = [  # Optional
+  # How mature is this project? Common values are
+  #   3 - Alpha
+  #   4 - Beta
+  #   5 - Production/Stable
+  "Development Status :: 3 - Alpha",
+
+  # Indicate who your project is intended for
+  "Intended Audience :: Developers",
+  "Topic :: Games/Entertainment",
+
+  # Pick your license as you wish
+  "License :: OSI Approved :: MIT License",
+
+  # Specify the Python versions you support here. In particular, ensure
+  # that you indicate you support Python 3. These classifiers are *not*
+  # checked by "pip install". See instead "python_requires" below.
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3 :: Only",
+]
+dependencies = [
+  "mmc-export>=2.7.4"
+]
+
+[project.urls]
+"Homepage" = "https://github.com/HB-Modding-Crew/modpack-creator/"
+"Bug Reports" = "https://github.com/HB-Modding-Crew/modpack-creator/issues/"
+"Source" = "https://github.com/HB-Modding-Crew/modpack-creator/"
+
+[project.scripts]  # Optional
+modpack-creator = "ModpackCreator.run:run"
+
+[build-system]
+requires = ["setuptools>=63.2.0", "wheel"]
+build-backend = "setuptools.build_meta"

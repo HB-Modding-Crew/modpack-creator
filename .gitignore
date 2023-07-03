@@ -142,6 +142,3 @@ tasks/
 
 # Keyring shell
 keyring-shell.sh
-
-# Old
-old/
